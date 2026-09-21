@@ -3,7 +3,7 @@
 Welcome to the TFG Anvil Calculator! This tool helps you determine the most efficient sequence of smithing actions 
 to always get a perfectly forged item in the TerraFirmaGreg modpack.
 
-Link to the tool: https://adrianmiller99.github.io/tfg-anvil-calculator/src/index.html
+Link to the tool: https://demandss.github.io/tfg-anvil-calculator/src/index.html
 
 
 ## How to Use
@@ -48,10 +48,7 @@ Use the toggle switch in the top right corner to switch between light and dark m
 
 ## Support
 If you encounter any issues or have suggestions for improvements, 
-feel free to open an issue on the [GitHub repository](https://github.com/AdrianMiller99/tfg-anvil-calculator/issues/new/choose).
-
-If you feel like this tool has helped you and you want to support me, 
-you can do so by buying me a coffee on [Ko-fi](https://ko-fi.com/adrianmiller99) or by simply giving the repository a star.
+feel free to open an issue on the [GitHub repository](https://github.com/Demandss/tfg-anvil-calculator/issues/new/choose).
 
 # License
 This project is licensed under the European Union Public Licence (EUPL) 1.2. See the LICENSE file for details.
