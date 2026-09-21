@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://demandss.github.io/tfg-anvil-calculator/sitemap.xml
