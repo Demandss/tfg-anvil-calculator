@@ -322,6 +322,34 @@ select {
   transform: scale(1.1);
 }
 
+.clear-action-btn {
+  order: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.45;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 4px 0 0;
+  border-radius: 4px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+/* Lighten the clear button once an action is actually chosen, hinting it's now useful */
+.action-icon[data-action]:not([data-action=""]) ~ .clear-action-btn {
+  opacity: 0.85;
+}
+
+.clear-action-btn:hover {
+  opacity: 1;
+  background-color: rgba(217, 48, 37, 0.15);
+}
+
 #action-popup {
   position: fixed;
   top: 50%;

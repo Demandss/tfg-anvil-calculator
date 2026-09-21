@@ -17,6 +17,7 @@ const translations = {
     selectActionHeading: "Select an Action",
     closeButton: "Close",
     priorityLabel: "Priority",
+    clearActionLabel: "Clear action",
     priority: {
       none: "None",
       last: "Last",
@@ -57,6 +58,7 @@ const translations = {
     selectActionHeading: "Выберите действие",
     closeButton: "Закрыть",
     priorityLabel: "Приоритет",
+    clearActionLabel: "Сбросить действие",
     priority: {
       none: "Нет",
       last: "Последнее",
@@ -423,11 +425,18 @@ document.getElementById("calculate-button").addEventListener("click", function()
 // Single function to manage icon selection
 function setupInstructionListener(selector) {
   const icon = document.querySelector(selector + ' .action-icon');
+  const clearBtn = document.querySelector(selector + ' .clear-action-btn');
   const container = document.querySelector('.container');
   const popup = document.getElementById('action-popup');
   const popupContent = document.querySelector('.action-popup-content');
   const header = document.querySelector('.app-header');
 
+  // Reset just the chosen action, leaving the priority select untouched
+  clearBtn.addEventListener('click', function() {
+    icon.src = '../res/empty.png';
+    icon.setAttribute('data-action', '');
+    applyTooltipToIcon(icon);
+  });
 
   icon.addEventListener('click', function() {
     const currentIcon = this;
