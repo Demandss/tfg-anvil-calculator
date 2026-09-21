@@ -16,6 +16,7 @@ const translations = {
     finalHeading: "2. Finally",
     selectActionHeading: "Select an Action",
     closeButton: "Close",
+    priorityLabel: "Priority",
     priority: {
       none: "None",
       last: "Last",
@@ -55,6 +56,7 @@ const translations = {
     finalHeading: "2. Финал",
     selectActionHeading: "Выберите действие",
     closeButton: "Закрыть",
+    priorityLabel: "Приоритет",
     priority: {
       none: "Нет",
       last: "Последнее",
@@ -109,6 +111,10 @@ function setLanguage(lang) {
 
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria-label')));
   });
 
   document.getElementById('lang-label').textContent = currentLang.toUpperCase();
@@ -367,7 +373,7 @@ document.getElementById("calculate-button").addEventListener("click", function()
     if (anyPriority.length > 0) {
       const anyHits = anyPriority.map(i => i);
 
-      let insertionPoint = 0;
+      let insertionPoint;
       if (last.length > 0 && secondLast.length > 0) {
         insertionPoint = sortedInstructions.length - last.length - secondLast.length;
       } else if (last.length > 0) {
