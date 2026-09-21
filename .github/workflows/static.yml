@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version/tag to deploy, e.g. v25.09.abc1234 (leave empty to deploy the latest main)'
-        required: false
-        default: ''
+        description: 'Version (e.g. YY.MM.PATCH)'
+        required: true
+        default: '0.0.0'
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages and tagging the release
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -23,19 +23,28 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  validate:
     # Only ever deploy from the main branch, even if a different branch is picked when dispatching manually
     if: github.ref == 'refs/heads/main'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check tag does not exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ inputs.version }}"
+          if gh api repos/${{ github.repository }}/git/ref/tags/$TAG --silent 2>/dev/null; then
+            echo "Tag $TAG already exists — bump the version"
+            exit 1
+          fi
+          echo "Tag $TAG is free, proceeding"
+
+  build:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.version != '' && inputs.version || 'main' }}
       - name: Prepare Pages content
         run: |
           mkdir -p _site
@@ -48,6 +57,28 @@ jobs:
         with:
           # Only the files the site actually needs, not .git/.github/README/LICENSE
           path: '_site'
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  tag:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Tag this deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ inputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
