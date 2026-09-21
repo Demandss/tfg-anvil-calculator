@@ -85,6 +85,20 @@ function applyTooltipToIcon(iconElement) {
 
 document.getElementById("calculate-button").addEventListener("click", function() {
   const targetValue = parseInt(document.getElementById("target-value").value);
+  const errorMessage = document.getElementById("calc-error");
+
+  errorMessage.classList.add("hidden");
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove("hidden");
+    document.getElementById("result").classList.remove("visible");
+  }
+
+  if (isNaN(targetValue)) {
+    showError("Enter a target value.");
+    return;
+  }
 
   // Collect and filter instructions
   const instructions = [];
@@ -109,35 +123,23 @@ document.getElementById("calculate-button").addEventListener("click", function()
     draw: -15
   };
 
-  function selectBestHit(preTargetValue, remainingHits) {
-    let bestHitAction = null;
-    let minActions = Infinity;
+  // A hit can land on any of three tiers, so every combination is tried and the one
+  // needing the fewest setup actions wins.
+  function hitTierCombinations(hitCount) {
+    let combinations = [[]];
 
-    remainingHits.forEach(hit => {
-      const hitValue = actions[hit];
-      const actionsNeeded = Math.ceil(preTargetValue / hitValue);
-      if (actionsNeeded < minActions && (preTargetValue % hitValue === 0 || preTargetValue + hitValue <= targetValue)) {
-        minActions = actionsNeeded;
-        bestHitAction = hit;
-      }
-    });
+    for (let i = 0; i < hitCount; i++) {
+      const expanded = [];
+      combinations.forEach(combination => {
+        ["hit1", "hit2", "hit3"].forEach(tier => expanded.push([...combination, tier]));
+      });
+      combinations = expanded;
+    }
 
-    return bestHitAction;
+    return combinations;
   }
 
-  function calculateSetupActions(targetValue, instructions) {
-    let instructionSum = 0;
-    instructions.forEach(instr => {
-      if (instr.action === "hit") {
-        const bestHit = selectBestHit(targetValue - instructionSum, ["hit1", "hit2", "hit3"]);
-        instructionSum += actions[bestHit];
-        instr.action = bestHit;
-      } else {
-        instructionSum += actions[instr.action];
-      }
-    });
-
-    let preTargetValue = targetValue - instructionSum;
+  function findSetupActions(preTargetValue) {
     const dp = Array(preTargetValue + 1).fill(Infinity);
     dp[0] = 0;
 
@@ -145,11 +147,15 @@ document.getElementById("calculate-button").addEventListener("click", function()
       if (dp[i] !== Infinity) {
         for (let action in actions) {
           let nextValue = i + actions[action];
-          if (nextValue <= preTargetValue) {
+          if (nextValue >= 0 && nextValue <= preTargetValue) {
             dp[nextValue] = Math.min(dp[nextValue], dp[i] + 1);
           }
         }
       }
+    }
+
+    if (dp[preTargetValue] === Infinity) {
+      return null;
     }
 
     let setupActions = [];
@@ -169,6 +175,44 @@ document.getElementById("calculate-button").addEventListener("click", function()
     setupActions.reverse();
 
     return setupActions;
+  }
+
+  function calculateSetupActions(targetValue, instructions) {
+    const hitInstructions = instructions.filter(instr => instr.action === "hit");
+    let fixedSum = 0;
+
+    instructions.forEach(instr => {
+      if (instr.action !== "hit") {
+        fixedSum += actions[instr.action];
+      }
+    });
+
+    let best = null;
+
+    hitTierCombinations(hitInstructions.length).forEach(tiers => {
+      const instructionSum = tiers.reduce((sum, tier) => sum + actions[tier], fixedSum);
+      const preTargetValue = targetValue - instructionSum;
+
+      if (preTargetValue < 0) {
+        return;
+      }
+
+      const setupActions = findSetupActions(preTargetValue);
+
+      if (setupActions && (!best || setupActions.length < best.setupActions.length)) {
+        best = { setupActions, tiers };
+      }
+    });
+
+    if (!best) {
+      return null;
+    }
+
+    hitInstructions.forEach((instr, index) => {
+      instr.action = best.tiers[index];
+    });
+
+    return best.setupActions;
   }
 
   function sortInstructions(instructions) {
@@ -199,6 +243,12 @@ document.getElementById("calculate-button").addEventListener("click", function()
   }
 
   const setupActions = calculateSetupActions(targetValue, instructions);
+
+  if (!setupActions) {
+    showError("These instructions cannot reach the target value.");
+    return;
+  }
+
   const sortedInstructions = sortInstructions(instructions);
 
   // Display results as images

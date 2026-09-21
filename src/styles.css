@@ -217,6 +217,19 @@ button:hover {
   color: inherit;
 }
 
+.error-message {
+  color: #d93025;
+  margin-bottom: 0;
+}
+
+.dark-mode .error-message {
+  color: #ff6b6b;
+}
+
+.error-message.hidden {
+  display: none;
+}
+
 /* Adjusting image size within the instruction section */
 .instruction-set .action-icon {
   width: 64px;
