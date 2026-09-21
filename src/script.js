@@ -2,8 +2,148 @@ const darkModeIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#ccc
 
 const lightModeIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="#333" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 1.25a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0V2a.75.75 0 0 1 .75-.75Z"/><path fill="currentColor" fill-rule="evenodd" d="M6.25 12a5.75 5.75 0 1 1 11.5 0a5.75 5.75 0 0 1-11.5 0ZM12 7.75a4.25 4.25 0 1 0 0 8.5a4.25 4.25 0 0 0 0-8.5Z" clip-rule="evenodd"/><path fill="currentColor" d="M5.46 4.399a.75.75 0 0 0-1.061 1.06l.707.707a.75.75 0 1 0 1.06-1.06l-.707-.707ZM22.75 12a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1 0-1.5h1a.75.75 0 0 1 .75.75Zm-3.149-6.54a.75.75 0 1 0-1.06-1.061l-.707.707a.75.75 0 1 0 1.06 1.06l.707-.707ZM12 20.25a.75.75 0 0 1 .75.75v1a.75.75 0 0 1-1.5 0v-1a.75.75 0 0 1 .75-.75Zm6.894-2.416a.75.75 0 1 0-1.06 1.06l.707.707a.75.75 0 1 0 1.06-1.06l-.707-.707ZM3.75 12a.75.75 0 0 1-.75.75H2a.75.75 0 0 1 0-1.5h1a.75.75 0 0 1 .75.75Zm2.416 6.894a.75.75 0 0 0-1.06-1.06l-.707.707a.75.75 0 0 0 1.06 1.06l.707-.707Z"/></svg>`;
 
+const translations = {
+  en: {
+    instructionsHeading: "Smithing Instructions",
+    targetValueHeading: "Target Value",
+    targetValuePlaceholder: "Enter target value",
+    startValueSummary: "Already started smithing? Set your current value",
+    startValueLabel: "Start Value",
+    startValuePlaceholder: "Defaults to 0",
+    calculateButton: "Calculate",
+    resultHeading: "Result",
+    setupHeading: "1. Setup",
+    finalHeading: "2. Finally",
+    selectActionHeading: "Select an Action",
+    closeButton: "Close",
+    priority: {
+      none: "None",
+      last: "Last",
+      secondLast: "Second Last",
+      thirdLast: "Third Last",
+      notLast: "Not Last",
+      any: "Any"
+    },
+    actions: {
+      punch: "Punch",
+      bend: "Bend",
+      upset: "Upset",
+      shrink: "Shrink",
+      hit: "Hit",
+      hit1: "Hit (light)",
+      hit2: "Hit (medium)",
+      hit3: "Hit (heavy)",
+      draw: "Draw",
+      "": "None"
+    },
+    errors: {
+      enterTarget: "Enter a target value.",
+      invalidStart: "Start value must be a number of 0 or more.",
+      noSolution: "These instructions cannot reach the target value."
+    }
+  },
+  ru: {
+    instructionsHeading: "Инструкции ковки",
+    targetValueHeading: "Целевое значение",
+    targetValuePlaceholder: "Введите целевое значение",
+    startValueSummary: "Уже начали ковку? Укажите текущее значение",
+    startValueLabel: "Текущее значение",
+    startValuePlaceholder: "По умолчанию 0",
+    calculateButton: "Рассчитать",
+    resultHeading: "Результат",
+    setupHeading: "1. Подготовка",
+    finalHeading: "2. Финал",
+    selectActionHeading: "Выберите действие",
+    closeButton: "Закрыть",
+    priority: {
+      none: "Нет",
+      last: "Последнее",
+      secondLast: "Предпоследнее",
+      thirdLast: "Третье с конца",
+      notLast: "Не последнее",
+      any: "Любое"
+    },
+    actions: {
+      punch: "Тычок",
+      bend: "Изгиб",
+      upset: "Осадка",
+      shrink: "Усадка",
+      hit: "Удар",
+      hit1: "Удар (лёгкий)",
+      hit2: "Удар (средний)",
+      hit3: "Удар (тяжёлый)",
+      draw: "Вытяжка",
+      "": "Нет"
+    },
+    errors: {
+      enterTarget: "Введите целевое значение.",
+      invalidStart: "Стартовое значение должно быть числом от 0 и больше.",
+      noSolution: "С такими инструкциями невозможно достичь целевого значения."
+    }
+  }
+};
+
+let currentLang = 'en';
+let lastErrorKey = null;
+
+function t(key) {
+  let value = translations[currentLang];
+  key.split('.').forEach(part => {
+    value = value == null ? undefined : value[part];
+  });
+  return value == null ? key : value;
+}
+
+function actionLabel(action) {
+  return translations[currentLang].actions[action] || action;
+}
+
+function setLanguage(lang) {
+  currentLang = translations[lang] ? lang : 'en';
+  localStorage.setItem('lang', currentLang);
+  document.documentElement.lang = currentLang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+
+  document.getElementById('lang-label').textContent = currentLang.toUpperCase();
+  document.getElementById('lang-toggle-checkbox').checked = currentLang === 'ru';
+
+  document.querySelectorAll('.action-icon').forEach(applyTooltipToIcon);
+
+  if (lastErrorKey) {
+    showCalcError(lastErrorKey);
+  }
+}
+
+function showCalcError(key) {
+  lastErrorKey = key;
+  const errorMessage = document.getElementById('calc-error');
+  errorMessage.textContent = t('errors.' + key);
+  errorMessage.classList.remove('hidden');
+  document.getElementById('result').classList.remove('visible');
+}
+
+function hideCalcError() {
+  lastErrorKey = null;
+  document.getElementById('calc-error').classList.add('hidden');
+}
+
+document.getElementById('lang-toggle-checkbox').addEventListener('change', function() {
+  setLanguage(this.checked ? 'ru' : 'en');
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   initializeMode();
+
+  const storedLang = localStorage.getItem('lang');
+  const browserLang = navigator.language && navigator.language.toLowerCase().startsWith('ru') ? 'ru' : 'en';
+  setLanguage(storedLang || browserLang);
 
   document.querySelectorAll('.action-icon').forEach(icon => {
     icon.src = '../res/empty.png';
@@ -66,9 +206,8 @@ function initializeMode() {
 function createActionImage(action) {
   const img = document.createElement("img");
   img.src = `../res/${action}.png`;  // Assuming all images are named after the action
-  img.alt = action;
-  const capitalizedAction = action.charAt(0).toUpperCase() + action.slice(1);
-  img.title = capitalizedAction;
+  img.alt = actionLabel(action);
+  img.title = actionLabel(action);
   img.classList.add("result-icon");
   return img;
 }
@@ -76,11 +215,8 @@ function createActionImage(action) {
 // Function to apply tooltips to existing action icons in the instruction set and popup
 function applyTooltipToIcon(iconElement) {
   const action = iconElement.getAttribute("data-action");
-  if (action) {
-    const capitalizedAction = action.charAt(0).toUpperCase() + action.slice(1);
-    iconElement.title = capitalizedAction;
-  } else if (action === "") {
-    iconElement.title = "None";
+  if (action !== null) {
+    iconElement.title = actionLabel(action);
   }
 }
 
@@ -88,23 +224,15 @@ document.getElementById("calculate-button").addEventListener("click", function()
   const targetValue = parseInt(document.getElementById("target-value").value);
   const startValueInput = document.getElementById("start-value").value;
   const startValue = startValueInput === "" ? 0 : parseInt(startValueInput);
-  const errorMessage = document.getElementById("calc-error");
-
-  errorMessage.classList.add("hidden");
-
-  function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.classList.remove("hidden");
-    document.getElementById("result").classList.remove("visible");
-  }
+  hideCalcError();
 
   if (isNaN(targetValue)) {
-    showError("Enter a target value.");
+    showCalcError("enterTarget");
     return;
   }
 
   if (isNaN(startValue) || startValue < 0) {
-    showError("Start value must be a number of 0 or more.");
+    showCalcError("invalidStart");
     return;
   }
 
@@ -257,7 +385,7 @@ document.getElementById("calculate-button").addEventListener("click", function()
   const setupActions = calculateSetupActions(targetValue, instructions);
 
   if (!setupActions) {
-    showError("These instructions cannot reach the target value.");
+    showCalcError("noSolution");
     return;
   }
 
@@ -352,7 +480,7 @@ function resetPage() {
     const actionIcon = set.querySelector('.action-icon');
     actionIcon.src = '../res/empty.png';
     actionIcon.setAttribute('data-action', '');
-    actionIcon.title = 'None';
+    actionIcon.title = actionLabel('');
 
     const prioritySelect = set.querySelector('.priority');
     if (prioritySelect) {
@@ -365,7 +493,7 @@ function resetPage() {
   resultCard.classList.remove('visible');
 
   // Hide any previous error message
-  document.getElementById('calc-error').classList.add('hidden');
+  hideCalcError();
 
   // Clear setup and final actions
   document.getElementById('setup-actions').innerHTML = '';

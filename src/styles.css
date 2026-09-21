@@ -145,6 +145,23 @@ body {
   fill: #ffffff;
 }
 
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+  padding-right: 16px;
+  border-right: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+#lang-label {
+  margin-right: 8px;
+  min-width: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0.85;
+}
+
 .mode-toggle {
   display: flex;
   align-items: center;
