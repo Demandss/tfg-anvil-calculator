@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   document.getElementById('target-value').value = '';
+  document.getElementById('start-value').value = '';
   document.getElementById('result').classList.remove('visible');
 });
 
@@ -85,6 +86,8 @@ function applyTooltipToIcon(iconElement) {
 
 document.getElementById("calculate-button").addEventListener("click", function() {
   const targetValue = parseInt(document.getElementById("target-value").value);
+  const startValueInput = document.getElementById("start-value").value;
+  const startValue = startValueInput === "" ? 0 : parseInt(startValueInput);
   const errorMessage = document.getElementById("calc-error");
 
   errorMessage.classList.add("hidden");
@@ -97,6 +100,11 @@ document.getElementById("calculate-button").addEventListener("click", function()
 
   if (isNaN(targetValue)) {
     showError("Enter a target value.");
+    return;
+  }
+
+  if (isNaN(startValue) || startValue < 0) {
+    showError("Start value must be a number of 0 or more.");
     return;
   }
 
@@ -140,14 +148,18 @@ document.getElementById("calculate-button").addEventListener("click", function()
   }
 
   function findSetupActions(preTargetValue) {
-    const dp = Array(preTargetValue + 1).fill(Infinity);
-    dp[0] = 0;
+    if (startValue > preTargetValue) {
+      return null;
+    }
 
-    for (let i = 0; i <= preTargetValue; i++) {
+    const dp = Array(preTargetValue + 1).fill(Infinity);
+    dp[startValue] = 0;
+
+    for (let i = startValue; i <= preTargetValue; i++) {
       if (dp[i] !== Infinity) {
         for (let action in actions) {
           let nextValue = i + actions[action];
-          if (nextValue >= 0 && nextValue <= preTargetValue) {
+          if (nextValue >= startValue && nextValue <= preTargetValue) {
             dp[nextValue] = Math.min(dp[nextValue], dp[i] + 1);
           }
         }
@@ -161,10 +173,10 @@ document.getElementById("calculate-button").addEventListener("click", function()
     let setupActions = [];
     let currentValue = preTargetValue;
 
-    while (currentValue > 0) {
+    while (currentValue > startValue) {
       for (let action in actions) {
         let prevValue = currentValue - actions[action];
-        if (prevValue >= 0 && dp[prevValue] === dp[currentValue] - 1) {
+        if (prevValue >= startValue && dp[prevValue] === dp[currentValue] - 1) {
           setupActions.push(action);
           currentValue = prevValue;
           break;
@@ -333,6 +345,7 @@ function setupInstructionListener(selector) {
 function resetPage() {
   // Reset target value input
   document.getElementById('target-value').value = '';
+  document.getElementById('start-value').value = '';
 
   // Reset instruction sets
   document.querySelectorAll('.instruction-set').forEach(set => {
@@ -350,6 +363,9 @@ function resetPage() {
   // Hide result card
   const resultCard = document.getElementById('result');
   resultCard.classList.remove('visible');
+
+  // Hide any previous error message
+  document.getElementById('calc-error').classList.add('hidden');
 
   // Clear setup and final actions
   document.getElementById('setup-actions').innerHTML = '';

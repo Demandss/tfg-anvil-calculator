@@ -217,6 +217,42 @@ button:hover {
   color: inherit;
 }
 
+.input-label {
+  display: block;
+  margin-top: 15px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.start-value-details {
+  margin-top: 12px;
+  margin-bottom: 10px;
+}
+
+.start-value-details[open] {
+  margin-bottom: 15px;
+}
+
+.start-value-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.start-value-details summary:hover {
+  opacity: 1;
+}
+
+.start-value-details[open] summary {
+  opacity: 1;
+  margin-bottom: 5px;
+}
+
+.start-value-details .input-label {
+  margin-top: 10px;
+}
+
 .error-message {
   color: #d93025;
   margin-bottom: 0;

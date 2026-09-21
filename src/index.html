@@ -70,6 +70,11 @@
   <section class="card">
     <h2>Target Value</h2>
     <input type="number" id="target-value" placeholder="Enter target value" class="input-field">
+    <details class="start-value-details">
+      <summary>Already started smithing? Set your current value</summary>
+      <label for="start-value" class="input-label">Start Value</label>
+      <input type="number" id="start-value" placeholder="Defaults to 0" class="input-field">
+    </details>
     <button id="calculate-button">Calculate</button>
     <p id="calc-error" class="error-message hidden"></p>
   </section>
